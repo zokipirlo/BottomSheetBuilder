@@ -18,6 +18,7 @@ package com.github.rubensousa.bottomsheetbuilder.adapter;
 
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,18 +33,21 @@ import java.util.List;
 class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter.ViewHolder> {
 
     public static final int TYPE_ITEM = 0;
-    public static final int TYPE_HEADER = 1;
+    public static final int TYPE_TITLE = 1;
     public static final int TYPE_DIVIDER = 2;
+    public static final int TYPE_HEADER = 3;
 
     private List<BottomSheetItem> mItems;
     BottomSheetItemClickListener mListener;
     private int mMode;
     private int mItemWidth;
+    private boolean mDriveStyle;
 
-    public BottomSheetItemAdapter(List<BottomSheetItem> items, int mode,
+    public BottomSheetItemAdapter(List<BottomSheetItem> items, int mode, boolean driveStyle,
                                   BottomSheetItemClickListener listener) {
         mMode = mode;
         mItems = items;
+        mDriveStyle = driveStyle;
         mListener = listener;
     }
 
@@ -63,6 +67,8 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
             return TYPE_ITEM;
         } else if (item instanceof BottomSheetDivider) {
             return TYPE_DIVIDER;
+        } else if (item instanceof BottomSheetTitle) {
+            return TYPE_TITLE;
         } else if (item instanceof BottomSheetHeader) {
             return TYPE_HEADER;
         }
@@ -74,7 +80,7 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (mMode == BottomSheetBuilder.MODE_GRID) {
             View layout = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.bottomsheetbuilder_grid_adapter, parent, false);
+                    .inflate(R.layout.bottomsheetbuilder_grid_item, parent, false);
 
             ViewGroup.LayoutParams layoutParams = layout.getLayoutParams();
             layoutParams.width = mItemWidth;
@@ -84,25 +90,35 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
 
         if (mMode == BottomSheetBuilder.MODE_LIST) {
 
-            if (viewType == TYPE_HEADER) {
-                return new HeaderViewHolder(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.bottomsheetbuilder_list_header, parent, false));
+            if (viewType == TYPE_TITLE) {
+                return new TitleViewHolder(LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.bottomsheetbuilder_list_title, parent, false));
             }
 
             if (viewType == TYPE_ITEM) {
                 return new ItemViewHolder(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.bottomsheetbuilder_list_adapter, parent, false));
+                        .inflate(R.layout.bottomsheetbuilder_list_item, parent, false));
             }
 
             if (viewType == TYPE_DIVIDER) {
-                return new DividerViewHolder(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.bottomsheetbuilder_list_divider, parent, false));
+                if (mDriveStyle) {
+                    return new DividerViewHolder(LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.bottomsheetbuilder_list_divider_drive, parent, false));
+                } else {
+                    return new DividerViewHolder(LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.bottomsheetbuilder_list_divider, parent, false));
+                }
+            }
+
+            if (viewType == TYPE_HEADER && mDriveStyle) {
+                return new HeaderViewHolder(LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.bottomsheetbuilder_list_header, parent, false));
             }
 
         }
 
         return new ViewHolder(LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.bottomsheetbuilder_list_adapter, parent, false));
+                .inflate(R.layout.bottomsheetbuilder_list_item, parent, false));
     }
 
     @Override
@@ -112,10 +128,12 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
         if (mMode == BottomSheetBuilder.MODE_LIST) {
             if (holder.getItemViewType() == TYPE_ITEM) {
                 ((ItemViewHolder) holder).setData((BottomSheetMenuItem) item);
-            } else if (holder.getItemViewType() == TYPE_HEADER) {
-                ((HeaderViewHolder) holder).setData((BottomSheetHeader) item);
+            } else if (holder.getItemViewType() == TYPE_TITLE) {
+                ((TitleViewHolder) holder).setData((BottomSheetTitle) item);
             } else if (holder.getItemViewType() == TYPE_DIVIDER) {
                 ((DividerViewHolder) holder).setData((BottomSheetDivider) item);
+            } else if (holder.getItemViewType() == TYPE_HEADER) {
+                ((HeaderViewHolder) holder).setData((BottomSheetHeader) item);
             }
         } else {
             ((ItemViewHolder) holder).setData((BottomSheetMenuItem) item);
@@ -152,16 +170,16 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
         }
     }
 
-    public class HeaderViewHolder extends ViewHolder {
+    public class TitleViewHolder extends ViewHolder {
 
         public TextView textView;
 
-        public HeaderViewHolder(View itemView) {
+        public TitleViewHolder(View itemView) {
             super(itemView);
-            textView = (TextView) itemView.findViewById(R.id.textView);
+            textView = itemView.findViewById(R.id.textView);
         }
 
-        public void setData(BottomSheetHeader item) {
+        public void setData(BottomSheetTitle item) {
             textView.setText(item.getTitle());
             int color = item.getTextColor();
 
@@ -171,17 +189,60 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
         }
     }
 
+    public class HeaderViewHolder extends ViewHolder implements View.OnClickListener {
+
+        public AppCompatImageView leftImageView;
+        public TextView textView;
+        public AppCompatImageView rightImageView;
+
+        public HeaderViewHolder(View itemView) {
+            super(itemView);
+            itemView.setOnClickListener(this);
+            leftImageView = itemView.findViewById(R.id.leftImageView);
+            textView = itemView.findViewById(R.id.textView);
+            rightImageView = itemView.findViewById(R.id.rightImageView);
+        }
+
+        public void setData(BottomSheetHeader item) {
+            leftImageView.setImageDrawable(item.getIcon());
+            textView.setText(item.getTitle());
+            rightImageView.setImageDrawable(item.getRightIcon());
+            int color = item.getTextColor();
+            int background = item.getBackground();
+
+            if (color != 0) {
+                textView.setTextColor(color);
+            }
+
+            if (background != 0) {
+                itemView.setBackgroundResource(background);
+            }
+        }
+
+        @Override
+        public void onClick(View v) {
+            BottomSheetHeader item = (BottomSheetHeader) mItems.get(getLayoutPosition());
+
+            if (mListener != null) {
+                mListener.onBottomSheetItemClick(item.getMenuItem());
+            }
+        }
+    }
+
 
     public class ItemViewHolder extends ViewHolder implements View.OnClickListener {
 
         public AppCompatImageView imageView;
         public TextView textView;
+        public SwitchCompat switchView;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
-            imageView = (AppCompatImageView) itemView.findViewById(R.id.imageView);
-            textView = (TextView) itemView.findViewById(R.id.textView);
+            imageView = itemView.findViewById(R.id.imageView);
+            textView = itemView.findViewById(R.id.textView);
+            switchView = itemView.findViewById(R.id.switchView);
+            switchView.setClickable(false);
         }
 
         public void setData(BottomSheetMenuItem item) {
@@ -198,6 +259,12 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
                 itemView.setBackgroundResource(background);
             }
 
+            if (item.isCheckable()) {
+                switchView.setVisibility(View.VISIBLE);
+                switchView.setChecked(item.isChecked());
+            } else {
+                switchView.setVisibility(View.GONE);
+            }
         }
 
         @Override
@@ -205,6 +272,9 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
             BottomSheetMenuItem item = (BottomSheetMenuItem) mItems.get(getLayoutPosition());
 
             if (mListener != null) {
+                if (item.isCheckable()) {
+                    switchView.setChecked(!switchView.isChecked());
+                }
                 mListener.onBottomSheetItemClick(item.getMenuItem());
             }
         }

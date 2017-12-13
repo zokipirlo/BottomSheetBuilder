@@ -34,17 +34,21 @@ class BottomSheetMenuItem implements BottomSheetItem {
     private Drawable mIcon;
     private String mTitle;
     private int mId;
+    private boolean mIsCheckable;
+    private boolean mIsChecked;
     private MenuItem mMenuItem;
 
     @DrawableRes
     private int mBackground;
 
-    public BottomSheetMenuItem(MenuItem item,@ColorInt int textColor, @DrawableRes int background,
+    public BottomSheetMenuItem(MenuItem item, @ColorInt int textColor, @DrawableRes int background,
                                @ColorInt int tintColor) {
         mMenuItem = item;
         mIcon = item.getIcon();
         mId = item.getItemId();
         mTitle = item.getTitle().toString();
+        mIsCheckable = item.isCheckable();
+        mIsChecked = item.isChecked();
         mTextColor = textColor;
         mBackground = background;
         mTintColor = tintColor;
@@ -70,6 +74,14 @@ class BottomSheetMenuItem implements BottomSheetItem {
 
     public int getId() {
         return mId;
+    }
+
+    public boolean isCheckable() {
+        return mIsCheckable;
+    }
+
+    public boolean isChecked() {
+        return mIsChecked;
     }
 
     @ColorInt

@@ -5,4 +5,6 @@
     android:layout_height="1dp"
     android:layout_marginBottom="@dimen/bottomsheet_vertical_margin"
     android:layout_marginTop="@dimen/bottomsheet_vertical_margin"
+    android:layout_marginLeft="@dimen/bottomsheet_divider_drive_margin"
+    android:layout_marginStart="@dimen/bottomsheet_divider_drive_margin"
     android:background="@color/colorSheetDivider" />

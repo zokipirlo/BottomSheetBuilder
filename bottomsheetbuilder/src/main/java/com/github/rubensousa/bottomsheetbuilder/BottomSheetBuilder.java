@@ -66,7 +66,9 @@ public class BottomSheetBuilder {
     private int mTitleTextColor;
 
     private boolean mDelayedDismiss = true;
+    private boolean mDismissOnSwitch = false;
     private boolean mExpandOnStart = false;
+    private boolean mDriveStyle = false;
     private int mIconTintColor = -1;
     private int mMode;
     private Menu mMenu;
@@ -142,19 +144,40 @@ public class BottomSheetBuilder {
     }
 
     public BottomSheetBuilder addItem(int id, @StringRes int title, @DrawableRes int icon) {
-        return addItem(id, mContext.getString(title), ContextCompat.getDrawable(mContext, icon));
+        return addItem(id, mContext.getString(title), ContextCompat.getDrawable(mContext, icon), null);
     }
 
     public BottomSheetBuilder addItem(int id, @StringRes int title, Drawable icon) {
-        return addItem(id, mContext.getString(title), icon);
+        return addItem(id, mContext.getString(title), icon, null);
     }
 
     public BottomSheetBuilder addItem(int id, String title, @DrawableRes int icon) {
-        return addItem(id, title, ContextCompat.getDrawable(mContext, icon));
+        return addItem(id, title, ContextCompat.getDrawable(mContext, icon), null);
     }
 
-    public BottomSheetBuilder addItem(int id, String title, Drawable icon) {
-        mAdapterBuilder.addItem(id, title, icon, mItemTextColor, mItemBackground, mIconTintColor);
+    public BottomSheetBuilder addItem(int id, @StringRes int title, @DrawableRes int icon, Boolean checked) {
+        return addItem(id, mContext.getString(title), ContextCompat.getDrawable(mContext, icon), checked);
+    }
+
+    public BottomSheetBuilder addItem(int id, @StringRes int title, Drawable icon, Boolean checked) {
+        return addItem(id, mContext.getString(title), icon, checked);
+    }
+
+    public BottomSheetBuilder addItem(int id, String title, @DrawableRes int icon, Boolean checked) {
+        return addItem(id, title, ContextCompat.getDrawable(mContext, icon), checked);
+    }
+
+    public BottomSheetBuilder addItem(int id, String title, Drawable icon, Boolean checked) {
+        mAdapterBuilder.addItem(id, title, icon, mItemTextColor, mItemBackground, mIconTintColor, checked);
+        return this;
+    }
+
+    public BottomSheetBuilder setHeaderItem(int id, @DrawableRes int icon, String title, @DrawableRes int rightIcon) {
+        return setHeaderItem(id, ContextCompat.getDrawable(mContext, icon), title, ContextCompat.getDrawable(mContext, rightIcon));
+    }
+
+    public BottomSheetBuilder setHeaderItem(int id, Drawable icon, String title, Drawable rightIcon) {
+        mAdapterBuilder.setHeaderItem(id, icon, title, rightIcon, mItemTextColor, mItemBackground, mIconTintColor);
         return this;
     }
 
@@ -216,6 +239,20 @@ public class BottomSheetBuilder {
         return this;
     }
 
+    public BottomSheetBuilder dismissOnSwitch(boolean dismiss) {
+        mDismissOnSwitch = dismiss;
+        return this;
+    }
+
+    /*
+        Divider with left margin and header item visible
+        Images should be 24dp
+     */
+    public BottomSheetBuilder setDriveStyle(boolean driveStyle) {
+        mDriveStyle = driveStyle;
+        return this;
+    }
+
     public BottomSheetBuilder setAppBarLayout(AppBarLayout appbar) {
         mAppBarLayout = appbar;
         return this;
@@ -245,7 +282,7 @@ public class BottomSheetBuilder {
 
         View sheet = mAdapterBuilder.createView(mTitleTextColor, mBackgroundDrawable,
                 mBackgroundColor, mDividerBackground, mItemTextColor, mItemBackground,
-                mIconTintColor, mItemClickListener);
+                mIconTintColor, mDriveStyle, mItemClickListener);
 
         ViewCompat.setElevation(sheet, mContext.getResources()
                 .getDimensionPixelSize(R.dimen.bottomsheet_elevation));
@@ -296,12 +333,13 @@ public class BottomSheetBuilder {
 
         View sheet = mAdapterBuilder.createView(mTitleTextColor, mBackgroundDrawable,
                 mBackgroundColor, mDividerBackground, mItemTextColor, mItemBackground,
-                mIconTintColor, dialog);
+                mIconTintColor, mDriveStyle, dialog);
 
         sheet.findViewById(R.id.fakeShadow).setVisibility(View.GONE);
         dialog.setAppBar(mAppBarLayout);
         dialog.expandOnStart(mExpandOnStart);
         dialog.delayDismiss(mDelayedDismiss);
+        dialog.dismissOnSwitch(mDismissOnSwitch);
         dialog.setBottomSheetItemClickListener(mItemClickListener);
 
         if (mContext.getResources().getBoolean(R.bool.tablet_landscape)) {

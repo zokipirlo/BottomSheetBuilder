@@ -25,6 +25,7 @@ import android.support.design.widget.BottomSheetDialog;
 import android.support.design.widget.CoordinatorLayout;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
@@ -39,11 +40,13 @@ public class BottomSheetMenuDialog extends BottomSheetDialog implements BottomSh
     private AppBarLayout mAppBarLayout;
     private boolean mExpandOnStart;
     private boolean mDelayDismiss;
+    private boolean mDismissOnSwitch;
     boolean mRequestedExpand;
     boolean mClicked;
     boolean mRequestCancel;
     boolean mRequestDismiss;
     OnCancelListener mOnCancelListener;
+    View mContentView;
 
     public BottomSheetMenuDialog(Context context) {
         super(context);
@@ -87,7 +90,7 @@ public class BottomSheetMenuDialog extends BottomSheetDialog implements BottomSh
     @Override
     protected void onStart() {
         super.onStart();
-        final FrameLayout sheet = (FrameLayout) findViewById(R.id.design_bottom_sheet);
+        final FrameLayout sheet = findViewById(R.id.design_bottom_sheet);
 
         if (sheet != null) {
             mBehavior = BottomSheetBehavior.from(sheet);
@@ -142,6 +145,22 @@ public class BottomSheetMenuDialog extends BottomSheetDialog implements BottomSh
         }
     }
 
+    @Override
+    public void setContentView(View view) {
+        super.setContentView(view);
+        mContentView = view;
+    }
+
+    @Override
+    public void setContentView(View view, ViewGroup.LayoutParams params) {
+        super.setContentView(view, params);
+        mContentView = view;
+    }
+
+    public View getContentView() {
+        return mContentView;
+    }
+
     public void setAppBar(AppBarLayout appBar) {
         mAppBarLayout = appBar;
     }
@@ -154,6 +173,10 @@ public class BottomSheetMenuDialog extends BottomSheetDialog implements BottomSh
         mDelayDismiss = dismiss;
     }
 
+    public void dismissOnSwitch(boolean dismiss) {
+        mDismissOnSwitch = dismiss;
+    }
+
     public void setBottomSheetCallback(BottomSheetBehavior.BottomSheetCallback callback) {
         mCallback = callback;
     }
@@ -163,11 +186,25 @@ public class BottomSheetMenuDialog extends BottomSheetDialog implements BottomSh
     }
 
     public BottomSheetBehavior getBehavior() {
-        return mBehavior;
+        if (mBehavior != null) {
+            return mBehavior;
+        }
+        else {
+            final FrameLayout sheet = findViewById(R.id.design_bottom_sheet);
+            return BottomSheetBehavior.from(sheet);
+        }
     }
 
     @Override
     public void onBottomSheetItemClick(MenuItem item) {
+        if (!mDismissOnSwitch && item.isCheckable()) {
+            if (mClickListener != null) {
+                mClickListener.onBottomSheetItemClick(item);
+            }
+
+            return;
+        }
+
         if (!mClicked) {
 
             if (mBehavior != null) {

@@ -1,15 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/textView"
-    android:layout_width="wrap_content"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/bottomsheet_vertical_margin"
-    android:ellipsize="end"
-    android:maxLines="1"
-    android:paddingBottom="@dimen/bottomsheet_title_vertical_margin"
-    android:paddingEnd="@dimen/bottomsheet_horizontal_margin"
-    android:paddingLeft="@dimen/bottomsheet_horizontal_margin"
-    android:paddingRight="@dimen/bottomsheet_horizontal_margin"
-    android:paddingStart="@dimen/bottomsheet_horizontal_margin"
-    android:textColor="@color/colorSheetTitle"
-    android:textSize="@dimen/bottomsheet_title_size" />
+    android:orientation="vertical"
+    android:clickable="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottomsheet_list_item_header_height"
+        android:background="?selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingEnd="@dimen/bottomsheet_horizontal_margin"
+        android:paddingLeft="@dimen/bottomsheet_horizontal_margin"
+        android:paddingRight="@dimen/bottomsheet_horizontal_margin"
+        android:paddingStart="@dimen/bottomsheet_horizontal_margin">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/leftImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/bottomsheet_horizontal_margin"
+            android:layout_marginRight="@dimen/bottomsheet_horizontal_margin" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/bottomsheet_horizontal_margin"
+            android:layout_marginStart="@dimen/bottomsheet_horizontal_margin"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:textColor="@color/colorSheetText"
+            android:textSize="@dimen/bottomsheet_item_textsize" />
+
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/rightImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/bottomsheet_horizontal_margin"
+            android:layout_marginStart="@dimen/bottomsheet_horizontal_margin" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:layout_marginBottom="@dimen/bottomsheet_vertical_margin"
+        android:layout_marginTop="@dimen/bottomsheet_vertical_margin"
+        android:clickable="false"
+        android:background="@color/colorSheetDivider" />
+</LinearLayout>

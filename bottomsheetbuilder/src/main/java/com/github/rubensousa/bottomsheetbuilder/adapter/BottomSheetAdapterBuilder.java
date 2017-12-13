@@ -24,6 +24,7 @@ import android.support.v7.view.menu.MenuBuilder;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -61,7 +62,7 @@ public class BottomSheetAdapterBuilder {
     }
 
     public void addTitleItem(String title, int titleTextColor) {
-        mItems.add(new BottomSheetHeader(title, titleTextColor));
+        mItems.add(new BottomSheetTitle(title, titleTextColor));
     }
 
     public void addDividerItem(int dividerBackground) {
@@ -69,19 +70,32 @@ public class BottomSheetAdapterBuilder {
     }
 
     public void addItem(int id, String title, Drawable icon, int itemTextColor,
-                        int itemBackground, int tintColor) {
+                        int itemBackground, int tintColor, Boolean checked) {
         if (mMenu == null) {
             mMenu = new MenuBuilder(mContext);
         }
         MenuItem item = mMenu.add(Menu.NONE, id, Menu.NONE, title);
         item.setIcon(icon);
+        if (checked != null) {
+            item.setCheckable(true);
+            item.setChecked(checked);
+        }
         mItems.add(new BottomSheetMenuItem(item, itemTextColor, itemBackground, tintColor));
+    }
+
+    public void setHeaderItem(int id, Drawable icon, String title, Drawable rightIcon,
+                              int color, int itemBackground, int tintColor) {
+        if (mMenu == null) {
+            mMenu = new MenuBuilder(mContext);
+        }
+        MenuItem item = mMenu.add(Menu.NONE, id, Menu.NONE, title);
+        mItems.add(new BottomSheetHeader(item, icon, title, rightIcon, color, itemBackground, tintColor));
     }
 
     @SuppressLint("InflateParams")
     public View createView(int titleTextColor, int backgroundDrawable, int backgroundColor,
                            int dividerBackground, int itemTextColor, int itemBackground,
-                           int tintColor, BottomSheetItemClickListener itemClickListener) {
+                           int tintColor, boolean driveStyle, BottomSheetItemClickListener itemClickListener) {
 
         if (mFromMenu) {
             mItems = createAdapterItems(dividerBackground, titleTextColor,
@@ -94,7 +108,7 @@ public class BottomSheetAdapterBuilder {
                 layoutInflater.inflate(R.layout.bottomsheetbuilder_sheet_grid, null)
                 : layoutInflater.inflate(R.layout.bottomsheetbuilder_sheet_list, null);
 
-        final RecyclerView recyclerView = (RecyclerView) sheet.findViewById(R.id.recyclerView);
+        final RecyclerView recyclerView = sheet.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
 
         if (backgroundDrawable != 0) {
@@ -107,19 +121,19 @@ public class BottomSheetAdapterBuilder {
 
         // If we only have one title and it's the first item, set it as fixed
         if (mTitles == 1 && mMode == BottomSheetBuilder.MODE_LIST) {
-            BottomSheetItem header = mItems.get(0);
-            TextView headerTextView = (TextView) sheet.findViewById(R.id.textView);
-            if (header instanceof BottomSheetHeader) {
-                headerTextView.setVisibility(View.VISIBLE);
-                headerTextView.setText(header.getTitle());
+            BottomSheetItem title = mItems.get(0);
+            TextView titleTextView = sheet.findViewById(R.id.textView);
+            if (title instanceof BottomSheetTitle) {
+                titleTextView.setVisibility(View.VISIBLE);
+                titleTextView.setText(title.getTitle());
                 if (titleTextColor != 0) {
-                    headerTextView.setTextColor(titleTextColor);
+                    titleTextView.setTextColor(titleTextColor);
                 }
                 mItems.remove(0);
             }
         }
 
-        final BottomSheetItemAdapter adapter = new BottomSheetItemAdapter(mItems, mMode,
+        final BottomSheetItemAdapter adapter = new BottomSheetItemAdapter(mItems, mMode, driveStyle,
                 itemClickListener);
 
         if (mMode == BottomSheetBuilder.MODE_LIST) {
@@ -171,8 +185,8 @@ public class BottomSheetAdapterBuilder {
                     }
 
                     CharSequence title = item.getTitle();
-                    if (title != null && !title.equals("")) {
-                        items.add(new BottomSheetHeader(title.toString(), titleTextColor));
+                    if (!TextUtils.isEmpty(title)) {
+                        items.add(new BottomSheetTitle(title.toString(), titleTextColor));
                         mTitles++;
                     }
 
